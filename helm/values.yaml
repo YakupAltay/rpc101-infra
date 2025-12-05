@@ -10,16 +10,8 @@ global:
 
 # Ingress Configuration (Cloudflare-ready)
 ingress:
-  enabled: false  # Using Kong directly on port 80 via hostNetwork
-  className: nginx             # RKE2 embedded nginx-ingress
-  annotations:
-    # Cloudflare optimizations
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+  enabled: false
+  className: nginx
   tls:
     enabled: false  # Cloudflare handles TLS (Flexible mode)
 
