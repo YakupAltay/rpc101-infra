@@ -19,7 +19,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ $.Release.Name }}-kong-admin-gui
+            name: kong-admin-gui
             port:
               number: 8002
       {{- else if eq . (printf "admin.%s" $.Values.global.domain) }}
@@ -27,7 +27,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ $.Release.Name }}-kong-admin
+            name: kong-admin
             port:
               number: 8001
       {{- else if eq . (printf "metrics.%s" $.Values.global.domain) }}
@@ -35,9 +35,9 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ $.Release.Name }}-metrics-gateway
+            name: metrics-gateway
             port:
-              number: 8080
+              number: 9090
       {{- end }}
   {{- end }}
   {{- if .Values.ingress.tls.enabled }}
