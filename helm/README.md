@@ -30,7 +30,7 @@ kubectl delete namespace rpc101-platform redis-ha postgres-ha kong monitoring
 This is an **umbrella chart** with 4 subcharts:
 
 ```
-rpc101-infrastructure/
+rpc101-infra/
 ├── Chart.yaml              # Parent chart with dependencies
 ├── values.yaml             # Parent values (overrides subcharts)
 ├── templates/

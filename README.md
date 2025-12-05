@@ -10,7 +10,7 @@
 
 ```bash
 # Deploy development environment
-cd /path/to/rpc101-infrastructure
+cd /path/to/rpc101-infra
 ./scripts/deploy.sh dev
 
 # Check status
@@ -112,7 +112,7 @@ Storage: Longhorn (3-replica distributed)
 ## 📁 Repository Structure
 
 ```
-rpc101-infrastructure/
+rpc101-infra/
 ├── README.md                          # This file
 ├── docs/
 │   ├── PRODUCTION-DEPLOYMENT.md       # Complete production setup guide
@@ -172,8 +172,8 @@ rpc101-infrastructure/
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/rpc101-infrastructure.git
-cd rpc101-infrastructure
+git clone https://github.com/YakupAltay/rpc101-infra.git
+cd rpc101-infra
 
 # Deploy
 ./scripts/deploy.sh dev

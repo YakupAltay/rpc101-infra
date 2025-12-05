@@ -11,7 +11,7 @@ spec:
   project: default
   
   source:
-    repoURL: https://github.com/YakupAltay/rpc101-infrastructure.git
+    repoURL: https://github.com/YakupAltay/rpc101-infra.git
     targetRevision: main
     path: helm
     helm:
