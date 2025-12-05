@@ -5,8 +5,7 @@ metadata:
   name: {{ .Release.Name }}-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
@@ -37,7 +36,7 @@ spec:
           service:
             name: metrics-gateway
             port:
-              number: 9090
+              number: 8080
       {{- end }}
   {{- end }}
   {{- if .Values.ingress.tls.enabled }}
