@@ -1,0 +1,23 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: basic-auth
+  namespace: rpc101-production
+spec:
+  encryptedData:
+    auth: AgCQSw5snGSHYMQUErY18+dLQ0qXgw6q9IZGEFE5nMPuEcKE81BKNFxeOcHkL9XweXVzGk2//krsOEno8VpiTo9btWOKNBhOAWPWXbVK0jASGKVU5QxBML4k3CEVfLCVyY8xKJ8Fpa2RRGrnRRlyb/e/vQ/P0Y42rXvStAIZw0JFqi982sNnJCiyyghYtq0JvOrS4yiHxxBAr3Y0Tuhv14EIg/5UE94tyTg5SkIFA0qrrGat32SrRTTTukdm7sUYT5Qe8X467icUfLlGifccWFd93V3HG40uG9Pwi17e43BeUdxuFC39U3xgueRAGrFOSA9G1BcMFk6iQxK6okQnf2pOOZBDtD0Qgtx2jn7Kwh+NZM7BTh3SN9I5SNJvGnokB8U77Qp5lhd/XBI9uGD4G4qaRcmENWacSaW6TZiNxltfF2L5XR3XVEq2E3mnyxQgI1lAqGSLfEBzkVZ00sD0HvabPhIW22Qx7gIwRQtlYN2D+NVYzBSCGi/h/nLa5EVP+CU8eE7BNo4tnEBV14vNGoOrf97RXYM9lJa7o4SwT/3aHrmXfym0RYdIKamTbvJTVKlJW2fnVYLs6XCOCYvJy6/ijEWZL91/XQl77e0w47z9qPNko18BRoeSM1BX1l+khXEv7FeqVgyTWUAMUGh3Jpo9yc/O+GX4qByOoo3e/4wio32srT1JefiCR0BNOytXTyzSjJCS686G0xuCf6z0CLHGUZEYCuHdaGbN1FhUPidMLBZCuoogZknJVGwx
+  template:
+    metadata:
+      annotations:
+        meta.helm.sh/release-name: rpc101-prod
+        meta.helm.sh/release-namespace: rpc101-production
+      creationTimestamp: null
+      labels:
+        app: rpc101
+        app.kubernetes.io/managed-by: Helm
+        component: auth
+      name: basic-auth
+      namespace: rpc101-production
+    type: Opaque

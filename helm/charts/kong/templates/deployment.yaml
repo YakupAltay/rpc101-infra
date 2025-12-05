@@ -1,0 +1,197 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: kong
+    component: gateway
+spec:
+  replicas: 3  # Back to 3 replicas (no hostNetwork constraint)
+  selector:
+    matchLabels:
+      app: kong
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: kong
+        component: gateway
+    spec:
+      # Pod scheduling: Spread replicas across nodes for HA
+      # Uses "preferred" for Minikube compatibility (single node)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - kong
+              topologyKey: kubernetes.io/hostname
+
+      containers:
+      - name: kong
+        image: kong:3.9-ubuntu
+        ports:
+        - name: proxy
+          containerPort: 8000  # Back to 8000, will use NodePort
+          protocol: TCP
+        - name: admin
+          containerPort: 8001
+          protocol: TCP
+        - name: admin-gui
+          containerPort: 8002
+          protocol: TCP
+        env:
+        # Database Configuration
+        - name: KONG_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_DATABASE
+        - name: KONG_PG_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PG_HOST
+        - name: KONG_PG_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PG_PORT
+        - name: KONG_PG_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+        - name: KONG_PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: KONG_PG_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PG_DATABASE
+
+        # Redis Configuration
+        - name: KONG_REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_REDIS_HOST
+        - name: KONG_REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_REDIS_PORT
+        - name: KONG_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-auth
+              key: password
+        - name: KONG_REDIS_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_REDIS_DATABASE
+        - name: KONG_REDIS_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_REDIS_TIMEOUT
+
+        # Kong Configuration
+        - name: KONG_PROXY_LISTEN
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PROXY_LISTEN
+        - name: KONG_ADMIN_LISTEN
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_ADMIN_LISTEN
+        - name: KONG_ADMIN_GUI_LISTEN
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_ADMIN_GUI_LISTEN
+        - name: KONG_ADMIN_GUI_URL
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_ADMIN_GUI_URL
+        - name: KONG_ADMIN_GUI_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_ADMIN_GUI_API_URL
+
+        - name: KONG_LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_LOG_LEVEL
+        - name: KONG_DATABASE_MIGRATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_DATABASE_MIGRATIONS
+        - name: KONG_PROXY_ACCESS_LOG
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PROXY_ACCESS_LOG
+        - name: KONG_ADMIN_ACCESS_LOG
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_ADMIN_ACCESS_LOG
+        - name: KONG_PROXY_ERROR_LOG
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PROXY_ERROR_LOG
+        - name: KONG_ADMIN_ERROR_LOG
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_ADMIN_ERROR_LOG
+
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8001
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+      # No volumes needed

@@ -1,0 +1,40 @@
+# Helm build artifacts
+helm/Chart.lock
+helm/charts/*.tgz
+*.tgz
+
+# Kubernetes secrets and sensitive files
+*-secret.yaml
+*secret*.yaml
+*.secret
+*.key
+*.pem
+*.crt
+kubeconfig
+*.kubeconfig
+
+# Environment-specific overrides (not in repo)
+helm/values-*.yaml
+!helm/values.yaml
+!helm/values-template.yaml
+argocd/application-*.yaml
+!argocd/application.yaml
+
+# RKE2/Kubernetes tokens
+scripts/rke2-token.txt
+node-token.txt
+join-token.txt
+
+# Backup and temporary files
+*.bak
+*.backup
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+
+# IDE and editor files
+.vscode

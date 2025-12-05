@@ -1,0 +1,25 @@
+apiVersion: v2
+name: rpc101-infrastructure
+description: RPC101 Infrastructure - Umbrella Chart
+type: application
+version: 1.0.0
+appVersion: "1.0"
+
+dependencies:
+  - name: redis
+    version: "1.0.0"
+    repository: "file://charts/redis"
+    condition: redis.enabled
+  - name: postgresql
+    version: "1.0.0"
+    repository: "file://charts/postgresql"
+    condition: postgresql.enabled
+  - name: kong
+    version: "1.0.0"
+    repository: "file://charts/kong"
+    condition: kong.enabled
+  - name: monitoring
+    version: "1.0.0"
+    repository: "file://charts/monitoring"
+    condition: monitoring.enabled
+

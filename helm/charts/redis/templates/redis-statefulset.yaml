@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: redis
+    component: data
+spec:
+  serviceName: redis-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis
+      component: data
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: data
+    spec:
+      # Pod scheduling: Spread replicas across nodes for HA
+      # Uses "preferred" for Minikube compatibility (single node)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - redis
+                - key: component
+                  operator: In
+                  values:
+                  - data
+              topologyKey: kubernetes.io/hostname
+
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+          name: redis
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-auth
+              key: password
+        command:
+        - sh
+        - -c
+        - |
+          # Sentinel-aware startup with authentication
+          echo "Checking for Sentinel..."
+
+          # Try to connect to Sentinel (non-blocking)
+          MASTER_IP=""
+          if nslookup redis-sentinel.{{ .Release.Namespace }}.svc.cluster.local 2>/dev/null; then
+            echo "Sentinel found, querying master..."
+            sleep 2
+            MASTER_IP=$(redis-cli -h redis-sentinel.{{ .Release.Namespace }}.svc.cluster.local -p 26379 SENTINEL get-master-addr-by-name mymaster 2>/dev/null | head -1)
+          else
+            echo "Sentinel not available (initial deployment)"
+          fi
+
+          MY_IP=$(hostname -i)
+
+          # Build redis-server command with auth
+          REDIS_CMD="redis-server /etc/redis/redis.conf --requirepass $REDIS_PASSWORD --masterauth $REDIS_PASSWORD"
+
+          if [ -z "$MASTER_IP" ]; then
+            # Initial deployment
+            HOSTNAME=$(hostname)
+            POD_INDEX=${HOSTNAME##*-}
+
+            if [ "$POD_INDEX" = "0" ]; then
+              echo "Initial deployment: Starting as master"
+              exec $REDIS_CMD
+            else
+              echo "Initial deployment: Starting as replica of redis-0"
+              exec $REDIS_CMD --replicaof redis-0.redis-headless.{{ .Release.Namespace }}.svc.cluster.local 6379
+            fi
+          else
+            # Sentinel master exists
+            if [ "$MASTER_IP" = "$MY_IP" ]; then
+              echo "I am the current master ($MY_IP)"
+              exec $REDIS_CMD
+            else
+              echo "Starting as replica of master $MASTER_IP"
+              exec $REDIS_CMD --replicaof $MASTER_IP 6379
+            fi
+          fi
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+          items:
+          - key: redis.conf
+            path: redis.conf
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.persistence.storageClass }}
+      storageClassName: {{ .Values.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size | default "1Gi" }}

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: {{ .Release.Namespace }}
+data:
+  redis.conf: |
+    # Redis Configuration
+
+    # Authentication (password will be set via environment variable)
+    # requirepass ${REDIS_PASSWORD}
+    # masterauth ${REDIS_PASSWORD}
+
+    maxmemory 512mb
+    maxmemory-policy allkeys-lru
+    appendonly yes
+    appendfsync everysec
+    save 900 1
+    save 300 10
+    save 60 10000
+
+  sentinel.conf: |
+    # Sentinel Configuration
+    port 26379
+    bind 0.0.0.0
+
+    # Authentication
+    # sentinel auth-pass mymaster ${REDIS_PASSWORD}
+
+    # IP-based monitoring (DNS resolution can be slow)
+    sentinel resolve-hostnames no
+    sentinel announce-hostnames no
+
+    # Will be dynamically configured by init script
+    # sentinel monitor mymaster <MASTER_IP> 6379 2
+    sentinel down-after-milliseconds mymaster 5000
+    sentinel parallel-syncs mymaster 1
+    sentinel failover-timeout mymaster 10000

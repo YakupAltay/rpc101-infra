@@ -1,0 +1,147 @@
+---
+# CloudNativePG PostgreSQL Cluster
+# This will create a 3-node PostgreSQL cluster with automatic failover
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: kong-postgres
+  namespace: {{ .Release.Namespace }}
+spec:
+  # Number of PostgreSQL instances
+  instances: 3
+
+  # PostgreSQL version
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.5
+
+  # Storage configuration
+  storage:
+    size: {{ .Values.storage.size | default "5Gi" }}
+    storageClass: {{ .Values.storage.storageClass | default "local-path" }}
+
+  # Bootstrap configuration
+  bootstrap:
+    initdb:
+      database: kong
+      owner: kong
+      secret:
+        name: postgres-credentials
+      postInitSQL:
+        - CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+        - ALTER USER kong WITH PASSWORD '{{ .Values.password }}';
+        - ALTER USER kong CREATEDB;
+
+  # PostgreSQL configuration
+  postgresql:
+    # pg_hba rules for authentication
+    pg_hba:
+      - host all all all md5  # Allow password authentication from anywhere
+
+    parameters:
+      # Connection settings
+      max_connections: "200"
+
+      # Memory settings
+      shared_buffers: "256MB"
+      effective_cache_size: "1GB"
+      maintenance_work_mem: "64MB"
+      work_mem: "2621kB"
+
+      # WAL settings
+      wal_buffers: "16MB"
+      min_wal_size: "1GB"
+      max_wal_size: "4GB"
+
+      # Query tuning
+      default_statistics_target: "100"
+      random_page_cost: "1.1"
+      effective_io_concurrency: "200"
+
+      # Checkpoint settings
+      checkpoint_completion_target: "0.9"
+
+      # Logging
+      log_statement: "ddl"
+      log_line_prefix: "%m [%p] %q%u@%d "
+      log_timezone: "UTC"
+
+      # Performance
+      max_worker_processes: "2"
+      max_parallel_workers_per_gather: "1"
+      max_parallel_workers: "2"
+
+  # Replication settings
+  minSyncReplicas: 1
+  maxSyncReplicas: 2
+
+  # High Availability settings
+  primaryUpdateStrategy: unsupervised  # Automatic failover
+  primaryUpdateMethod: switchover      # Clean switchover for updates
+
+  # Note: CloudNativePG automatically handles pod anti-affinity
+  # to spread PostgreSQL instances across different nodes
+
+  # Resource management
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  # Monitoring (Prometheus metrics)
+  monitoring:
+    enablePodMonitor: true
+
+  # Backup configuration (optional, can be enabled later)
+  # backup:
+  #   barmanObjectStore:
+  #     destinationPath: s3://my-bucket/backups
+  #     s3Credentials:
+  #       accessKeyId:
+  #         name: backup-credentials
+  #         key: ACCESS_KEY_ID
+  #       secretAccessKey:
+  #         name: backup-credentials
+  #         key: ACCESS_SECRET_KEY
+
+---
+# Service for primary (write operations)
+# CloudNativePG automatically creates services, but we can customize them
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-primary
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: kong-postgres
+    role: primary
+spec:
+  type: ClusterIP
+  selector:
+    postgresql: kong-postgres
+    role: primary
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+
+---
+# Service for replicas (read operations)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-replica
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: kong-postgres
+    role: replica
+spec:
+  type: ClusterIP
+  selector:
+    postgresql: kong-postgres
+    role: replica
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432

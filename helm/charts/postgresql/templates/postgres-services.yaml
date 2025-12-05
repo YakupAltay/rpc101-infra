@@ -1,0 +1,19 @@
+---
+# CloudNativePG otomatik olarak kong-postgres-rw, kong-postgres-ro, kong-postgres-r service'lerini oluşturur
+# Sadece metrics service'i tanımlıyoruz
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: postgres
+    component: metrics
+spec:
+  selector:
+    cnpg.io/cluster: kong-postgres
+  ports:
+  - name: metrics
+    port: 9187
+    targetPort: 9187
+  type: ClusterIP

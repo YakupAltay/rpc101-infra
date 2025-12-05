@@ -1,0 +1,13 @@
+# Environment-Specific Values Override Template
+# Copy this file to values-prod.yaml or values-dev.yaml
+# and customize for your environment
+
+global:
+  domain: your-domain.com  # Replace with your actual domain
+
+kong:
+  domain: your-domain.com  # Replace with your actual domain
+  adminGuiUrl: "http://your-ip:30082"  # Replace with your actual IP/domain
+
+# Add any other environment-specific overrides below
+# These will override the default values.yaml settings

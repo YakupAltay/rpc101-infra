@@ -1,0 +1,7 @@
+replicas: 3
+adminGuiUrl: "http://localhost:8002"
+postgresql:
+  username: "kong"
+  password: "VsRTikCU3R11YEDtcAd1eDmmzfaLDhz"
+redis:
+  password: "HNZedtzFUUE5bLqrjtdqblwPxR8HKiYZ"

@@ -1,0 +1,39 @@
+---
+# Headless Service - Sentinel için gerekli (direct pod access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-headless
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: redis
+    component: data
+spec:
+  clusterIP: None  # Headless - DNS her pod için ayrı IP verir
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  selector:
+    app: redis
+    component: data
+
+---
+# ClusterIP Service - Uygulamalar için (Sentinel routing ile)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: redis
+    component: data
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  selector:
+    app: redis
+    component: data

@@ -1,0 +1,21 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: redis-auth
+  namespace: rpc101-production
+spec:
+  encryptedData:
+    password: AgCtsOkmBgUacPNZNqb57OhC7RBxj40LvTAbHIOvuTlRSFcswmfhuil5E+pwfpbqWclb43PaLjTSDcv9EoYJQ3iOg8W7aQx7EEsZu3xgHTY3CfI1SmEpi6at7TTaZXJ2WdDLBDW0QgB/y7C4aaAawc48Q7U+Vi5GA8AGksX559x1DOZyjRjvtxVf4ELkhAQ1HRfUFrS95rjrTH0pOYejDAAF+AUjp7gkxKaZFqJctHn+4GiDLcNGMHV9UdR4iwNEBdZthAxYSZaeqca5A4G9nn/T4GpTP0hC6rssx37T+axyebzg6Do7C5OMv8I5aF+d22KS2g4AX3Llm/O+76rJcsYqZIFhzODfowZzn+Y9fL1JINilYg0UUCzGcy9c7FAgdbqrLKcYQcJOO0BveTMkm4ER8GDixcprUqB4bWErqP/SWxpK038phKzaniEkA2ttWlVRa3wsZucfRQ9YfFdLZSwLfFPjUzIGMGI/kMNWnHkPVQcQJwaMS6LP3Wbz8rA/WosC2N45mW1ZFmRW9+kLqMBUmf2wTLdw0xH3KONOM9t9+x86xARrCnrn848Bg9tislaz0bhOG3PEnXFcrFa2l5IpgiY5JnIlAAU/yVpEMy4mj00nMP4cCKnB87vQChrmBoWG8HsallC0JxTcl+JLPoc7t7hIcTuihywvHBqCyu35hf/tDBogTMNRuWLj+rIESBuixfp5WmO0W6zXu2BixzXM9MumEPLEl5i/0+GsTgmZOhVsdQ==
+  template:
+    metadata:
+      annotations:
+        meta.helm.sh/release-name: rpc101-prod
+        meta.helm.sh/release-namespace: rpc101-production
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/managed-by: Helm
+      name: redis-auth
+      namespace: rpc101-production
+    type: Opaque

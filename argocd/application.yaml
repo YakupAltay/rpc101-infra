@@ -1,0 +1,51 @@
+# ArgoCD Application Template
+# Copy this file to application-prod.yaml or application-dev.yaml
+# and customize for your environment
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rpc101-ENVIRONMENT  # Change ENVIRONMENT to prod/dev
+  namespace: argocd
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/YakupAltay/rpc101-infrastructure.git
+    targetRevision: main
+    path: helm
+    helm:
+      valueFiles:
+        - values.yaml
+      # Add environment-specific overrides here:
+      # values: |
+      #   global:
+      #     domain: your-domain.com
+      #   kong:
+      #     domain: your-domain.com
+      #     adminGuiUrl: "http://your-ip:30082"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rpc101-ENVIRONMENT  # Change ENVIRONMENT to prod/dev
+  
+  syncPolicy:
+    automated:
+      prune: false  # Set to true for dev, false for production
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 5m
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas

@@ -1,0 +1,62 @@
+# RPC101 Infrastructure - Umbrella Chart Values
+# Optimized for RKE2 + Cloudflare DNS
+
+# Global values shared across all subcharts
+global:
+  environment: production
+  platform: rke2
+  domain: example.com
+  storageClass: longhorn       # Production distributed storage
+
+# Ingress Configuration (Cloudflare-ready)
+ingress:
+  enabled: false  # Using Kong directly on port 80 via hostNetwork
+  className: nginx             # RKE2 embedded nginx-ingress
+  annotations:
+    # Cloudflare optimizations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+  tls:
+    enabled: false  # Cloudflare handles TLS (Flexible mode)
+
+# Redis HA Configuration
+redis:
+  enabled: true
+  password: "HNZedtzFUUE5bLqrjtdqblwPxR8HKiYZ"
+  replicas: 3
+  persistence:
+    storageClass: longhorn    # Production distributed storage
+    size: 2Gi
+
+# PostgreSQL HA Configuration
+postgresql:
+  enabled: true
+  username: "kong"
+  password: "VsRTikCU3R11YEDtcAd1eDmmzfaLDhz"
+  instances: 3
+  storage:
+    storageClass: longhorn    # Production distributed storage
+    size: 5Gi
+
+# Kong Gateway Configuration
+kong:
+  enabled: true
+  replicas: 3
+  domain: example.com
+  adminGuiUrl: "http://localhost:8001"
+  postgresql:
+    username: "kong"
+    password: "VsRTikCU3R11YEDtcAd1eDmmzfaLDhz"
+  redis:
+    password: "HNZedtzFUUE5bLqrjtdqblwPxR8HKiYZ"
+
+# Monitoring Stack
+monitoring:
+  enabled: true
+  # Multi-endpoint metrics gateway on NodePort 30091
+  # /metrics/kong, /metrics/prometheus, /metrics/redis, /metrics/postgres, /metrics/kubernetes
+

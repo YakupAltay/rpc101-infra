@@ -1,0 +1,73 @@
+---
+# Kong Database Migrations Job
+# Run this once before deploying Kong to bootstrap the database
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kong-migrations
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: kong
+    component: migrations
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: kong
+        component: migrations
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: kong-migrations
+        image: kong:3.9.1
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Waiting for PostgreSQL to be ready..."
+          max_attempts=60
+          attempt=1
+
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts: Testing PostgreSQL connection..."
+            if kong migrations bootstrap --vv 2>&1; then
+              echo "✅ Migrations completed successfully!"
+              exit 0
+            fi
+
+            echo "⚠️  Migration failed, retrying in 5 seconds..."
+            sleep 5
+            attempt=$((attempt + 1))
+          done
+
+          echo "❌ Failed to run migrations after $max_attempts attempts"
+          exit 1
+
+        env:
+        # Database Configuration
+        - name: KONG_DATABASE
+          value: "postgres"
+        - name: KONG_PG_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PG_HOST
+        - name: KONG_PG_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: kong-env
+              key: KONG_PG_PORT
+        - name: KONG_PG_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+        - name: KONG_PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: KONG_PG_DATABASE
+          value: "kong"
