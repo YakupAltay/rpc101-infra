@@ -1,8 +1,10 @@
 {{- if .Values.ingress.enabled }}
+---
+# Console - with basic auth
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-ingress
+  name: {{ .Release.Name }}-console-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -12,11 +14,9 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  {{- range .Values.ingress.hosts }}
-  - host: {{ . }}
+  - host: console.{{ .Values.global.domain }}
     http:
       paths:
-      {{- if eq . (printf "console.%s" $.Values.global.domain) }}
       - path: /
         pathType: Prefix
         backend:
@@ -24,7 +24,21 @@ spec:
             name: kong-admin-gui
             port:
               number: 8002
-      {{- else if eq . (printf "admin.%s" $.Values.global.domain) }}
+---
+# Admin API and Metrics - no auth (internal use via console)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-internal-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: admin.{{ .Values.global.domain }}
+    http:
+      paths:
       - path: /
         pathType: Prefix
         backend:
@@ -32,7 +46,9 @@ spec:
             name: kong-admin
             port:
               number: 8001
-      {{- else if eq . (printf "metrics.%s" $.Values.global.domain) }}
+  - host: metrics.{{ .Values.global.domain }}
+    http:
+      paths:
       - path: /
         pathType: Prefix
         backend:
@@ -40,8 +56,6 @@ spec:
             name: metrics-gateway
             port:
               number: 9090
-      {{- end }}
-  {{- end }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
   {{- range .Values.ingress.hosts }}
