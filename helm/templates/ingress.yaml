@@ -1,0 +1,51 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  {{- range .Values.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+      {{- if eq . (printf "console.%s" $.Values.global.domain) }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-kong-admin-gui
+            port:
+              number: 8002
+      {{- else if eq . (printf "admin.%s" $.Values.global.domain) }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-kong-admin
+            port:
+              number: 8001
+      {{- else if eq . (printf "metrics.%s" $.Values.global.domain) }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-metrics-gateway
+            port:
+              number: 8080
+      {{- end }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  {{- range .Values.ingress.hosts }}
+  - hosts:
+    - {{ . }}
+    secretName: {{ $.Release.Name }}-tls-{{ . | replace "." "-" }}
+  {{- end }}
+  {{- end }}
+{{- end }}

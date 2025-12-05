@@ -53,7 +53,7 @@ Single Node:
 └── Storage: local-path
 ```
 
-**Cost:** ~$15/month (1 node)  
+**Cost:** ~$15/month (1 node)
 **Use Case:** Local testing, development, POC
 
 ### Production Environment
@@ -76,8 +76,8 @@ Data Plane (5x CPX42: 8vCPU, 16GB):
 Storage: Longhorn (3-replica distributed)
 ```
 
-**Cost:** $145.92/month (Hetzner Cloud)  
-**Capacity:** 30-100 active tenants  
+**Cost:** $145.92/month (Hetzner Cloud)
+**Capacity:** 30-100 active tenants
 **Use Case:** Production multi-tenant RPC platform
 
 ---
@@ -368,6 +368,6 @@ For production deployment assistance, see:
 
 ---
 
-**Version:** 1.0  
-**Last Updated:** November 6, 2025  
+**Version:** 1.0
+**Last Updated:** November 6, 2025
 **Maintained By:** RPC101 Infrastructure Team

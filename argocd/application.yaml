@@ -9,7 +9,7 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  
+
   source:
     repoURL: https://github.com/YakupAltay/rpc101-infra.git
     targetRevision: main
@@ -24,11 +24,11 @@ spec:
       #   kong:
       #     domain: your-domain.com
       #     adminGuiUrl: "http://your-ip:30082"
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: rpc101-ENVIRONMENT  # Change ENVIRONMENT to prod/dev
-  
+
   syncPolicy:
     automated:
       prune: false  # Set to true for dev, false for production
@@ -43,7 +43,7 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 5m
-  
+
   ignoreDifferences:
     - group: apps
       kind: Deployment

@@ -20,8 +20,8 @@ data:
   KONG_PROXY_LISTEN: "0.0.0.0:8000"  # Back to 8000
   KONG_ADMIN_LISTEN: "0.0.0.0:8001"
   KONG_ADMIN_GUI_LISTEN: "0.0.0.0:8002"
-  KONG_ADMIN_GUI_URL: "http://localhost:30082"
-  KONG_ADMIN_GUI_API_URL: "http://localhost:30081"
+  KONG_ADMIN_GUI_URL: "{{ .Values.adminGuiUrl }}"
+  KONG_ADMIN_GUI_API_URL: "{{ default (printf "http://localhost:30081") (and .Values.global.ingressEnabled (printf "https://admin.%s" .Values.global.domain)) }}"
   KONG_LOG_LEVEL: "info"
   KONG_DATABASE_MIGRATIONS: "off"
 
