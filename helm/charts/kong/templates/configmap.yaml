@@ -24,6 +24,9 @@ data:
   KONG_ADMIN_GUI_API_URL: "{{ .Values.adminGuiApiUrl | default (printf "http://localhost:30081") }}"
   KONG_ADMIN_GUI_AUTH: "basic-auth"
   KONG_ADMIN_GUI_SESSION_CONF: '{"secret":"super-secret-key-change-in-production","storage":"kong","cookie_secure":false}'
+  KONG_NGINX_WORKER_PROCESSES: "auto"
+  KONG_PG_MAX_CONCURRENT_QUERIES: "100"
+  KONG_PG_SEMAPHORE_TIMEOUT: "60000"
   KONG_LOG_LEVEL: "info"
   KONG_DATABASE_MIGRATIONS: "off"
 
