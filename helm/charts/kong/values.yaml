@@ -1,5 +1,6 @@
 replicas: 3
 adminGuiUrl: "http://localhost:8002"
+adminGuiApiUrl: "http://localhost:8001"
 postgresql:
   username: "kong"
   password: "VsRTikCU3R11YEDtcAd1eDmmzfaLDhz"

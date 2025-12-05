@@ -21,7 +21,7 @@ data:
   KONG_ADMIN_LISTEN: "0.0.0.0:8001"
   KONG_ADMIN_GUI_LISTEN: "0.0.0.0:8002"
   KONG_ADMIN_GUI_URL: "{{ .Values.adminGuiUrl }}"
-  KONG_ADMIN_GUI_API_URL: "{{ default (printf "http://localhost:30081") (and .Values.global.ingressEnabled (printf "https://admin.%s" .Values.global.domain)) }}"
+  KONG_ADMIN_GUI_API_URL: "{{ .Values.adminGuiApiUrl | default (printf "http://localhost:30081") }}"
   KONG_LOG_LEVEL: "info"
   KONG_DATABASE_MIGRATIONS: "off"
 
